@@ -99,7 +99,9 @@ namespace DiffPatch
             return patchFile;
         }
 
-        public string ToString(bool autoOffset = false)
+        public override string ToString() => ToString(false);
+
+        public string ToString(bool autoOffset)
         {
             var sb = new StringBuilder();
             if (BasePath != null && PatchedPath != null)
