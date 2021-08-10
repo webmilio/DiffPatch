@@ -35,7 +35,7 @@ namespace DiffPatch.Example
             await File.WriteAllTextAsync(result, diff.ToString(true));
         }
 
-        private static async Task<string[]> ApplyPatch(IList<string> original, string patch)
+        private static async Task<string[]> ApplyPatch(IEnumerable<string> original, string patch)
         {
             var patchFile = PatchFile.FromText(await File.ReadAllTextAsync(patch));
             var patcher = new Patcher(patchFile.Patches, original);
