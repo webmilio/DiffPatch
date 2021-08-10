@@ -8,20 +8,42 @@ namespace DiffPatch.Example
 {
     internal class Program
     {
+        private const string 
+            OriginalFilePath = "Example.OriginalFile.cs",
+            NewFilePath = "Example.NewFile.cs",
+            PatchPath = "Example.OriginalFile.cs.patch";
+
         private static readonly Assembly _assembly = Assembly.GetExecutingAssembly();
 
 
         private static async Task Main(string[] args)
         {
-            var differ = new LineMatchedDiffer();
+            var original = await GetLines(OriginalFilePath);
+            var @new = await GetLines(NewFilePath);
 
-            var lines1 = await GetLines("Example.OriginalFile.cs");
-            var lines2 = await GetLines("Example.NewFile.cs");
+            await CreatePatch(original, @new, PatchPath);
+            var lines = await ApplyPatch(original, PatchPath);
 
-            var diff = differ.DiffLines(lines1, lines2);
-
-            await File.WriteAllTextAsync("Example.OriginalFile.cs.patch", diff.ToString(true));
+            Console.WriteLine(string.Join('\n', lines));
         }
+
+        private static async Task CreatePatch(IList<string> original, IList<string> @new, string result)
+        {
+            var differ = new LineMatchedDiffer();
+            var diff = differ.DiffLines(original, @new);
+
+            await File.WriteAllTextAsync(result, diff.ToString(true));
+        }
+
+        private static async Task<string[]> ApplyPatch(IList<string> original, string patch)
+        {
+            var patchFile = PatchFile.FromText(await File.ReadAllTextAsync(patch));
+            var patcher = new Patcher(patchFile.Patches, original);
+
+            patcher.Patch(default);
+            return patcher.ResultLines;
+        }
+
 
         private static async Task<List<string>> GetLines(string file)
         {
