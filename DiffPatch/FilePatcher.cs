@@ -37,6 +37,7 @@ namespace DiffPatch
             };
         }
 
+
         public string[] BaseLines { get; private set; }
         public string[] PatchedLines { get; private set; }
         public List<Patcher.Result> Results { get; private set; }

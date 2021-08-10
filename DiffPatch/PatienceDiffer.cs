@@ -8,7 +8,7 @@ namespace DiffPatch
 
         public PatienceDiffer(CharRepresenter charRep) : base(charRep) { }
 
-        public override int[] Match(IReadOnlyList<string> lines1, IReadOnlyList<string> lines2)
+        public override int[] Match(IList<string> lines1, IList<string> lines2)
         {
             LineModeString1 = CharRep.LinesToChars(lines1);
             LineModeString2 = CharRep.LinesToChars(lines2);

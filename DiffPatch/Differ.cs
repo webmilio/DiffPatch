@@ -14,11 +14,11 @@ namespace DiffPatch
             CharRep = charRep;
         }
 
-        public abstract int[] Match(IReadOnlyList<string> lines1, IReadOnlyList<string> lines2);
+        public abstract int[] Match(IList<string> lines1, IList<string> lines2);
 
-        public List<Diff> Diff(IReadOnlyList<string> lines1, IReadOnlyList<string> lines2) => LineMatching.MakeDiffList(Match(lines1, lines2), lines1, lines2);
+        public List<Diff> Diff(IList<string> lines1, IList<string> lines2) => LineMatching.MakeDiffList(Match(lines1, lines2), lines1, lines2);
 
-        public List<Patch> MakePatches(IReadOnlyList<string> lines1, IReadOnlyList<string> lines2, int numContextLines = DefaultContext, bool collate = true) => MakePatches(Diff(lines1, lines2), numContextLines, collate);
+        public List<Patch> MakePatches(IList<string> lines1, IList<string> lines2, int numContextLines = DefaultContext, bool collate = true) => MakePatches(Diff(lines1, lines2), numContextLines, collate);
 
         public static List<Patch> MakePatches(List<Diff> diffs, int numContextLines = DefaultContext, bool collate = true)
         {
@@ -46,7 +46,7 @@ namespace DiffPatch
             };
         }
 
-        public PatchFile DiffLines(List<string> lines1, List<string> lines2, int numContextLines = DefaultContext, bool collate = true)
+        public PatchFile DiffLines(IList<string> lines1, IList<string> lines2, int numContextLines = DefaultContext, bool collate = true)
         {
             return new()
             {

@@ -9,7 +9,7 @@ namespace DiffPatch
 
         public LineMatchedDiffer(CharRepresenter charRep) : base(charRep) { }
 
-        public override int[] Match(IReadOnlyList<string> lines1, IReadOnlyList<string> lines2)
+        public override int[] Match(IList<string> lines1, IList<string> lines2)
         {
             var matches = base.Match(lines1, lines2);
 

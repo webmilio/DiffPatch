@@ -97,7 +97,7 @@ namespace DiffPatch
         public static int[] FromPatches(IEnumerable<Patch> patches, int len1) =>
             FromUnmatchedRanges(UnmatchedRanges(patches), len1);
 
-        public static List<Diff> MakeDiffList(int[] matches, IReadOnlyList<string> lines1, IReadOnlyList<string> lines2)
+        public static List<Diff> MakeDiffList(int[] matches, IList<string> lines1, IList<string> lines2)
         {
             var list = new List<Diff>();
             int l = 0, r = 0;
