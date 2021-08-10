@@ -46,7 +46,7 @@ namespace DiffPatch
             };
         }
 
-        public PatchFile DiffLines(string[] lines1, string[] lines2, int numContextLines = DefaultContext, bool collate = true)
+        public PatchFile DiffLines(List<string> lines1, List<string> lines2, int numContextLines = DefaultContext, bool collate = true)
         {
             return new()
             {
