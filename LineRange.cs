@@ -4,69 +4,98 @@ using System.Linq;
 
 namespace DiffPatch
 {
-	public struct LineRange : IEquatable<LineRange>
+    public struct LineRange : IEquatable<LineRange>
     {
-		public int start, end;
+        public LineRange Map(Func<int, int> f) => new()
+        {
+            Start = f(Start), 
+            End = f(End)
+        };
 
-		public int length {
-			get => end - start;
-			set => end = start + value;
-		}
+        public bool Contains(int i) => Start <= i && i < End;
+        public bool Contains(LineRange r) => r.Start >= Start && r.End <= End;
+        public bool Intersects(LineRange r) => r.Start < End || r.End > Start;
 
-		public int last {
-			get => end - 1;
-			set => end = value + 1;
-		}
+        public override string ToString() => "[" + Start + "," + End + ")";
 
-		public int first {
-			get => start;
-			set => start = value;
-		}
-		
-		public LineRange Map(Func<int, int> f) => new LineRange {start = f(start), end = f(end)};
+        public static bool operator ==(LineRange r1, LineRange r2) => r1.Start == r2.Start && r1.End == r2.End;
+        public static bool operator !=(LineRange r1, LineRange r2) => r1.Start != r2.Start || r1.End != r2.End;
 
-		public bool Contains(int i) => start <= i && i < end;
-		public bool Contains(LineRange r) => r.start >= start && r.end <= end;
-		public bool Intersects(LineRange r) => r.start < end || r.end > start;
+        public static LineRange operator +(LineRange r, int i) => new()
+        {
+            Start = r.Start + i, 
+            End = r.End + i
+        };
+        public static LineRange operator -(LineRange r, int i) => new()
+        {
+            Start = r.Start - i, 
+            End = r.End - i
+        };
 
-		public override string ToString() => "[" + start + "," + end + ")";
+        public static LineRange Union(LineRange r1, LineRange r2) => new LineRange
+        {
+            Start = Math.Min(r1.Start, r2.Start),
+            End = Math.Max(r1.End, r2.End)
+        };
 
-		public static bool operator ==(LineRange r1, LineRange r2) => r1.start == r2.start && r1.end == r2.end;
-		public static bool operator !=(LineRange r1, LineRange r2) => r1.start != r2.start || r1.end != r2.end;
+        public static LineRange Intersection(LineRange r1, LineRange r2) => new LineRange
+        {
+            Start = Math.Max(r1.Start, r2.Start),
+            End = Math.Min(r1.End, r2.End)
+        };
 
-		public static LineRange operator +(LineRange r, int i) => new LineRange {start = r.start + i, end = r.end + i};
-		public static LineRange operator -(LineRange r, int i) => new LineRange {start = r.start - i, end = r.end - i};
+        public IEnumerable<LineRange> Except(IEnumerable<LineRange> except, bool presorted = false)
+        {
+            if (!presorted)
+                except = except.OrderBy(r => r.Start);
 
-		public static LineRange Union(LineRange r1, LineRange r2) => new LineRange {
-			start = Math.Min(r1.start, r2.start),
-			end = Math.Max(r1.end, r2.end)
-		};
+            int start = Start;
 
-		public static LineRange Intersection(LineRange r1, LineRange r2) => new LineRange {
-			start = Math.Max(r1.start, r2.start),
-			end = Math.Min(r1.end, r2.end)
-		};
+            foreach (var r in except)
+            {
+                if (r.Start - start > 0)
+                    yield return new LineRange 
+                    { 
+                        Start = start,
+                        End = r.Start
+                    };
 
-		public IEnumerable<LineRange> Except(IEnumerable<LineRange> except, bool presorted = false) {
-			if (!presorted)
-				except = except.OrderBy(r => r.start);
+                start = r.End;
+            }
 
-			int start = this.start;
-			foreach (var r in except) {
-				if (r.start - start > 0)
-					yield return new LineRange { start = start, end = r.start };
-
-				start = r.end;
-			}
-			
-			if (this.end - start > 0)
-				yield return new LineRange { start = start, end = this.end };
-		}
+            if (End - start > 0)
+                yield return new LineRange
+                {
+                    Start = start, 
+                    End = End
+                };
+        }
 
         public override bool Equals(object obj) => obj is LineRange range && Equals(range);
 
-		public bool Equals(LineRange other) => this == other;
+        public bool Equals(LineRange other) => this == other;
 
-        public override int GetHashCode() => end*end + start; // elegant pairing function, seems appropriate, probably reduces hash collisions when truncating hash
-	}
+        public override int GetHashCode() => End * End + Start; // Elegant pairing function, seems appropriate, probably reduces hash collisions when truncating hash
+
+        public int Start { get; set; }
+        public int End { get; set; }
+
+        public int Length
+        {
+            get => End - Start;
+            set => End = Start + value;
+        }
+
+        public int Last
+        {
+            get => End - 1;
+            set => End = value + 1;
+        }
+
+        public int First
+        {
+            get => Start;
+            set => Start = value;
+        }
+    }
 }

@@ -4,169 +4,197 @@ using System.Linq;
 
 namespace DiffPatch
 {
-	public class Patch
-	{
-		public List<Diff> diffs;
-		public int start1;
-		public int start2;
-		public int length1;
-		public int length2;
+    public class Patch
+    {
+        public Patch()
+        {
+            Diffs = new List<Diff>();
+        }
 
-		public Patch() {
-			diffs = new List<Diff>();
-		}
+        public Patch(Patch patch)
+        {
+            Diffs = new List<Diff>(patch.Diffs.Select(d => new Diff(d.Operation, d.Text)));
+            Start1 = patch.Start1;
+            Start2 = patch.Start2;
+            Length1 = patch.Length1;
+            Length2 = patch.Length2;
+        }
 
-		public Patch(Patch patch) {
-			diffs = new List<Diff>(patch.diffs.Select(d => new Diff(d.op, d.text)));
-			start1 = patch.start1;
-			start2 = patch.start2;
-			length1 = patch.length1;
-			length2 = patch.length2;
-		}
+        public string Header => $"@@ -{Start1 + 1},{Length1} +{Start2 + 1},{Length2} @@";
+        public string AutoHeader => $"@@ -{Start1 + 1},{Length1} +_,{Length2} @@";
 
-		public string Header => $"@@ -{start1 + 1},{length1} +{start2 + 1},{length2} @@";
-		public string AutoHeader => $"@@ -{start1 + 1},{length1} +_,{length2} @@";
+        public IEnumerable<string> ContextLines => Diffs.Where(d => d.Operation != Operation.Insert).Select(d => d.Text);
+        public IEnumerable<string> PatchedLines => Diffs.Where(d => d.Operation != Operation.Delete).Select(d => d.Text);
+        public LineRange Range1 => new LineRange { Start = Start1, Length = Length1 };
+        public LineRange Range2 => new LineRange { Start = Start2, Length = Length2 };
 
-		public IEnumerable<string> ContextLines => diffs.Where(d => d.op != Operation.INSERT).Select(d => d.text);
-		public IEnumerable<string> PatchedLines => diffs.Where(d => d.op != Operation.DELETE).Select(d => d.text);
-		public LineRange Range1 => new LineRange {start = start1, length = length1};
-		public LineRange Range2 => new LineRange {start = start2, length = length2};
+        public LineRange TrimmedRange1 => TrimRange(Range1);
+        public LineRange TrimmedRange2 => TrimRange(Range2);
 
-		public LineRange TrimmedRange1 => TrimRange(Range1);
-		public LineRange TrimmedRange2 => TrimRange(Range2);
+        private LineRange TrimRange(LineRange range)
+        {
+            int start = 0;
+            while (start < Diffs.Count && Diffs[start].Operation == Operation.Equal)
+                start++;
 
-		private LineRange TrimRange(LineRange range) {
-			int start = 0;
-			while (start < diffs.Count && diffs[start].op == Operation.EQUAL)
-				start++;
+            if (start == Diffs.Count)
+                return new LineRange { Start = range.Start, Length = 0 };
 
-			if (start == diffs.Count)
-				return new LineRange { start = range.start, length = 0};
+            int end = Diffs.Count;
+            while (end > start && Diffs[end - 1].Operation == Operation.Equal)
+                end--;
 
-			int end = diffs.Count;
-			while (end > start && diffs[end - 1].op == Operation.EQUAL)
-				end--;
+            return new LineRange { Start = range.Start + start, End = range.End - (Diffs.Count - end) };
+        }
 
-			return new LineRange { start = range.start + start, end = range.end - (diffs.Count - end)};
-		}
+        public void RecalculateLength()
+        {
+            Length1 = Diffs.Count;
+            Length2 = Diffs.Count;
 
-		public void RecalculateLength() {
-			length1 = diffs.Count;
-			length2 = diffs.Count;
-			foreach (var d in diffs)
-				if (d.op == Operation.DELETE) length2--;
-				else if (d.op == Operation.INSERT) length1--;
-		}
+            foreach (var d in Diffs)
+                if (d.Operation == Operation.Delete)
+                    Length2--;
+                else if (d.Operation == Operation.Insert)
+                    Length1--;
+        }
 
-		public override string ToString() => 
-			string.Join(Environment.NewLine, diffs.Select(d => d.ToString()).Prepend(Header));
+        public override string ToString() =>
+            string.Join(Environment.NewLine, Diffs.Select(d => d.ToString()).Prepend(Header));
 
-		public void Trim(int numContextLines) {
-			var r = TrimRange(new LineRange{ start = 0, length = diffs.Count });
+        public void Trim(int numContextLines)
+        {
+            var r = TrimRange(new LineRange { Start = 0, Length = Diffs.Count });
 
-			if (r.length == 0) {
-				length1 = length2 = 0;
-				diffs.Clear();
-				return;
-			}
+            if (r.Length == 0)
+            {
+                Length1 = Length2 = 0;
+                Diffs.Clear();
+                return;
+            }
 
-			int trimStart = r.start - numContextLines;
-			int trimEnd = diffs.Count - r.end - numContextLines;
-			if (trimStart > 0) {
-				diffs.RemoveRange(0, trimStart);
-				start1 += trimStart;
-				start2 += trimStart;
-				length1 -= trimStart;
-				length2 -= trimStart;
-			}
+            int trimStart = r.Start - numContextLines;
+            int trimEnd = Diffs.Count - r.End - numContextLines;
+            if (trimStart > 0)
+            {
+                Diffs.RemoveRange(0, trimStart);
+                Start1 += trimStart;
+                Start2 += trimStart;
+                Length1 -= trimStart;
+                Length2 -= trimStart;
+            }
 
-			if (trimEnd > 0) {
-				diffs.RemoveRange(diffs.Count - trimEnd, trimEnd);
-				length1 -= trimEnd;
-				length2 -= trimEnd;
-			}
-		}
+            if (trimEnd > 0)
+            {
+                Diffs.RemoveRange(Diffs.Count - trimEnd, trimEnd);
+                Length1 -= trimEnd;
+                Length2 -= trimEnd;
+            }
+        }
 
-		public void Uncollate() {
-			var uncollatedDiffs = new List<Diff>(diffs.Count);
-			var addDiffs = new List<Diff>();
-			foreach (var d in diffs) {
-				if (d.op == Operation.DELETE) {
-					uncollatedDiffs.Add(d);
-				}
-				else if (d.op == Operation.INSERT) {
-					addDiffs.Add(d);
-				}
-				else {
-					uncollatedDiffs.AddRange(addDiffs);
-					addDiffs.Clear();
-					uncollatedDiffs.Add(d);
-				}
-			}
-			uncollatedDiffs.AddRange(addDiffs); //patches may not end with context diffs
-			diffs = uncollatedDiffs;
-		}
+        public void Uncollate()
+        {
+            var uncollatedDiffs = new List<Diff>(Diffs.Count);
+            var addDiffs = new List<Diff>();
+            foreach (var d in Diffs)
+            {
+                if (d.Operation == Operation.Delete)
+                {
+                    uncollatedDiffs.Add(d);
+                }
+                else if (d.Operation == Operation.Insert)
+                {
+                    addDiffs.Add(d);
+                }
+                else
+                {
+                    uncollatedDiffs.AddRange(addDiffs);
+                    addDiffs.Clear();
+                    uncollatedDiffs.Add(d);
+                }
+            }
+            uncollatedDiffs.AddRange(addDiffs); //patches may not end with context diffs
+            Diffs = uncollatedDiffs;
+        }
 
-		public List<Patch> Split(int numContextLines) {
-			if (diffs.Count == 0)
-				return new List<Patch>();
+        public List<Patch> Split(int numContextLines)
+        {
+            if (Diffs.Count == 0)
+                return new List<Patch>();
 
-			var ranges = new List<LineRange>();
-			int start = 0;
-			int n = 0;
-			for (int i = 0; i < diffs.Count; i++) {
-				if (diffs[i].op == Operation.EQUAL) {
-					n++;
-					continue;
-				}
+            var ranges = new List<LineRange>();
+            int start = 0;
+            int n = 0;
 
-				if (n > numContextLines * 2) {
-					ranges.Add(new LineRange {start = start, end = i - n + numContextLines});
-					start = i - numContextLines;
-				}
+            for (int i = 0; i < Diffs.Count; i++)
+            {
+                if (Diffs[i].Operation == Operation.Equal)
+                {
+                    n++;
+                    continue;
+                }
 
-				n = 0;
-			}
+                if (n > numContextLines * 2)
+                {
+                    ranges.Add(new LineRange { Start = start, End = i - n + numContextLines });
+                    start = i - numContextLines;
+                }
 
-			ranges.Add(new LineRange {start = start, end = diffs.Count});
+                n = 0;
+            }
 
-			var patches = new List<Patch>(ranges.Count);
-			int end1 = start1, end2 = start2;
-			int endDiffIndex = 0;
-			foreach (var r in ranges) {
-				int skip = r.start - endDiffIndex;
-				var p = new Patch {
-					start1 = end1 + skip,
-					start2 = end2 + skip,
-					diffs = diffs.Slice(r).ToList()
-				};
-				p.RecalculateLength();
-				patches.Add(p);
-				end1 = p.start1 + p.length1;
-				end2 = p.start2 + p.length2;
-				endDiffIndex = r.end;
-			}
+            ranges.Add(new LineRange { Start = start, End = Diffs.Count });
 
-			return patches;
-		}
+            var patches = new List<Patch>(ranges.Count);
+            int end1 = Start1, end2 = Start2;
+            int endDiffIndex = 0;
+
+            foreach (var r in ranges)
+            {
+                int skip = r.Start - endDiffIndex;
+                var p = new Patch
+                {
+                    Start1 = end1 + skip,
+                    Start2 = end2 + skip,
+                    Diffs = Diffs.Slice(r).ToList()
+                };
+
+                p.RecalculateLength();
+                patches.Add(p);
+                end1 = p.Start1 + p.Length1;
+                end2 = p.Start2 + p.Length2;
+                endDiffIndex = r.End;
+            }
+
+            return patches;
+        }
 
 
-		public void Combine(Patch patch2, IReadOnlyList<string> lines1) {
-			if (Range1.Intersects(patch2.Range1) || Range2.Intersects(patch2.Range2))
-				throw new ArgumentException("Patches overlap");
+        public void Combine(Patch patch2, IReadOnlyList<string> lines1)
+        {
+            if (Range1.Intersects(patch2.Range1) || Range2.Intersects(patch2.Range2))
+                throw new ArgumentException("Patches overlap");
 
-			while (start1 + length1 < patch2.start1) {
-				diffs.Add(new Diff(Operation.EQUAL, lines1[start1 + length1]));
-				length1++;
-				length2++;
-			}
+            while (Start1 + Length1 < patch2.Start1)
+            {
+                Diffs.Add(new Diff(Operation.Equal, lines1[Start1 + Length1]));
+                Length1++;
+                Length2++;
+            }
 
-			if (start2 + length2 != patch2.start2)
-				throw new ArgumentException("Unequal distance between end of patch1 and start of patch2 in context and patched");
+            if (Start2 + Length2 != patch2.Start2)
+                throw new ArgumentException("Unequal distance between end of patch1 and start of patch2 in context and patched");
 
-			diffs.AddRange(patch2.diffs);
-			length1 += patch2.length1;
-			length2 += patch2.length2;
-		}
-	}
+            Diffs.AddRange(patch2.Diffs);
+            Length1 += patch2.Length1;
+            Length2 += patch2.Length2;
+        }
+
+        public List<Diff> Diffs { get; set; }
+
+        public int Start1 { get; set; }
+        public int Start2 { get; set; }
+        public int Length1 { get; set; }
+        public int Length2 { get; set; }
+    }
 }
