@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiffPatch", "DiffPatch\Diff
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiffPatch.Tests", "DiffPatch.Tests\DiffPatch.Tests.csproj", "{7533AE3F-ECB0-4F26-B8B1-C7E2BAC2CA9D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiffPatch.Example", "DiffPatch.Example\DiffPatch.Example.csproj", "{185F5379-5122-4D19-9374-59A1BB73060C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7533AE3F-ECB0-4F26-B8B1-C7E2BAC2CA9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7533AE3F-ECB0-4F26-B8B1-C7E2BAC2CA9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7533AE3F-ECB0-4F26-B8B1-C7E2BAC2CA9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{185F5379-5122-4D19-9374-59A1BB73060C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{185F5379-5122-4D19-9374-59A1BB73060C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{185F5379-5122-4D19-9374-59A1BB73060C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{185F5379-5122-4D19-9374-59A1BB73060C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
