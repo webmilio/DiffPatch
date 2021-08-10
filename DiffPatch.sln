@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.31402.337
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiffPatch", "DiffPatch.csproj", "{6A990A34-DA3B-4AB0-BA1D-11551B3B4D87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiffPatch.Tests", "..\DiffPatch.Tests\DiffPatch.Tests.csproj", "{D93C0D06-A49C-42E7-8278-BBF5A102C884}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{6A990A34-DA3B-4AB0-BA1D-11551B3B4D87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A990A34-DA3B-4AB0-BA1D-11551B3B4D87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A990A34-DA3B-4AB0-BA1D-11551B3B4D87}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D93C0D06-A49C-42E7-8278-BBF5A102C884}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D93C0D06-A49C-42E7-8278-BBF5A102C884}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D93C0D06-A49C-42E7-8278-BBF5A102C884}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D93C0D06-A49C-42E7-8278-BBF5A102C884}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
