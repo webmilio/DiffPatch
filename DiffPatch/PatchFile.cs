@@ -69,7 +69,7 @@ namespace DiffPatch
                         }
 
                         delta += patch.Length2 - patch.Length1;
-                        patchFile.patches.Add(patch);
+                        patchFile.Patches.Add(patch);
                         break;
                     case ' ':
                         patch.Diffs.Add(new Diff(Operation.Equal, line.Substring(1)));
@@ -87,7 +87,7 @@ namespace DiffPatch
 
             if (verifyHeaders)
             {
-                foreach (var p in patchFile.patches)
+                foreach (var p in patchFile.Patches)
                 {
                     if (p.Length1 != p.ContextLines.Count())
                         throw new ArgumentException($"Context length doesn't match contents: {p.Header}");
@@ -108,7 +108,7 @@ namespace DiffPatch
                 sb.Append("+++ ").AppendLine(PatchedPath);
             }
 
-            foreach (var p in patches)
+            foreach (var p in Patches)
             {
                 sb.AppendLine(autoOffset ? p.AutoHeader : p.Header);
                 foreach (var diff in p.Diffs)
@@ -121,8 +121,8 @@ namespace DiffPatch
         public string BasePath { get; set; }
         public string PatchedPath { get; set; }
 
-        public List<Patch> patches = new();
+        public List<Patch> Patches { get; set; } = new();
 
-        public bool IsEmpty => patches.Count == 0;
+        public bool IsEmpty => Patches.Count == 0;
     }
 }

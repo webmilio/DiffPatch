@@ -16,7 +16,7 @@ namespace DiffPatch
             if (BaseLines == null)
                 LoadBaseFile();
 
-            var patcher = new Patcher(PatchFile.patches, BaseLines);
+            var patcher = new Patcher(PatchFile.Patches, BaseLines);
             patcher.Patch(mode);
             Results = patcher.Results.ToList();
             PatchedLines = patcher.ResultLines;
