@@ -1,10 +1,12 @@
-﻿namespace DiffPatch
+﻿using System;
+
+namespace DiffPatch
 {
     public class Diff
     {
-        public Diff(Operation op, string text)
+        public Diff(Operation operation, string text)
         {
-            Operation = op;
+            Operation = operation;
             Text = text;
         }
 
@@ -13,7 +15,8 @@
             {
                 Operation.Equal => ' ',
                 Operation.Insert => '+',
-                _ => '-'
+                Operation.Delete => '-',
+                _ => throw new ArgumentOutOfRangeException()
             } + Text;
 
         public Operation Operation { get; }
