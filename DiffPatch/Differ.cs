@@ -36,14 +36,20 @@ namespace DiffPatch
             return p.Split(numContextLines);
         }
 
-        public PatchFile DiffFiles(string path1, string path2, int numContextLines = DefaultContext, bool collate = true)
+        public PatchFile DiffFile(string path1, string path2, int numContextLines = DefaultContext, bool collate = true, bool includePaths = true)
         {
-            return new()
+            var patch = new PatchFile()
             {
-                BasePath = path1,
-                PatchedPath = path2,
                 Patches = MakePatches(File.ReadAllLines(path1), File.ReadAllLines(path2), numContextLines, collate)
             };
+
+            if (includePaths)
+            {
+                patch.BasePath = path1;
+                patch.PatchedPath = path2;
+            }
+
+            return patch;
         }
 
         public PatchFile DiffLines(IList<string> lines1, IList<string> lines2, int numContextLines = DefaultContext, bool collate = true)
