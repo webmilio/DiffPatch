@@ -27,7 +27,7 @@ namespace DiffPatch
             p.RecalculateLength();
             p.Trim(numContextLines);
 
-            if (p.Length1 == 0)
+            if (p.Length1 == 0 && p.Diffs.Count == 0)
                 return new List<Patch>();
 
             if (!collate)

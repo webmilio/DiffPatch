@@ -149,7 +149,7 @@ namespace DiffPatch
             this.charRep = charRep;
         }
 
-        public void Patch(Mode mode)
+        public Patcher Patch(Mode mode)
         {
             if (applied)
                 throw new Exception("Cannot apply the same patch twice.");
@@ -169,6 +169,8 @@ namespace DiffPatch
                 patch.Result.SearchOffset = searchOffset;
                 searchOffset -= patch.Length2 - patch.Length1;
             }
+
+            return this;
         }
 
         private void LinesToChars()
